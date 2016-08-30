@@ -1,35 +1,30 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import Keygrip = require('keygrip');
 
-declare class Cookies {
+declare interface Cookies {
     secure: boolean;
     request: IncomingMessage;
     response: ServerResponse;
 
-    constructor(request: IncomingMessage, response: ServerResponse);
-    constructor(request: IncomingMessage, response: ServerResponse, options: string[]);
-    constructor(request: IncomingMessage, response: ServerResponse, options: Keygrip);
-    constructor(request: IncomingMessage, response: ServerResponse, options: Cookies.CookiesOption);
-
     get(name: string): string;
-    get(name: string, opts: { signed: boolean; }): string;
+    get(name: string, opts: Cookies.GetOption): string;
 
     set(name: string): this;
     set(name: string, value: string): this;
-    set(name: string, value: string, opts): this;
+    set(name: string, value: string, opts: Cookies.SetOption): this;
 }
 
 declare namespace Cookies {
-    export interface CookiesOption {
+    export interface Option {
         keys: string[] | Keygrip;
         secure?: boolean;
     }
 
-    export interface CookiesGetOption {
+    export interface GetOption {
         signed: boolean;
     }
 
-    export interface CookiesSetOption {
+    export interface SetOption {
         maxAge?: number;
         expires?: Date;
         path?: string;
@@ -40,9 +35,9 @@ declare namespace Cookies {
         overwrite?: boolean;
     }
 
-    export type CookieAttr = CookiesSetOption;
+    export type CookieAttr = SetOption;
 
-    export class Cookie {
+    export interface Cookie {
         name: string;
         value: string;
         /**
@@ -57,13 +52,29 @@ declare namespace Cookies {
         httpOnly: boolean;
         overwrite: boolean;
 
-        constructor(name: string);
-        constructor(name: string, value: string);
-        constructor(name: string, value: string, attrs: CookieAttr);
-
         toString(): string;
         toHeader(): string;
     }
 }
+
+declare interface createCookies {
+    (request: IncomingMessage, response: ServerResponse): Cookies;
+    (request: IncomingMessage, response: ServerResponse, options: string[]): Cookies;
+    (request: IncomingMessage, response: ServerResponse, options: Keygrip): Cookies;
+    (request: IncomingMessage, response: ServerResponse, options: Cookies.Option): Cookies;
+
+    new (request: IncomingMessage, response: ServerResponse): Cookies;
+    new (request: IncomingMessage, response: ServerResponse, options: string[]): Cookies;
+    new (request: IncomingMessage, response: ServerResponse, options: Keygrip): Cookies;
+    new (request: IncomingMessage, response: ServerResponse, options: Cookies.Option): Cookies;
+
+    Cookie: {
+        new (name: string): Cookies.Cookie;
+        new (name: string, value: string): Cookies.Cookie;
+        new (name: string, value: string, attrs: Cookies.CookieAttr): Cookies.Cookie;
+    };
+}
+
+declare const Cookies: createCookies;
 
 export = Cookies;
